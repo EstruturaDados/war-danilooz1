@@ -16,11 +16,26 @@
 
 // Inclusão das bibliotecas padrão necessárias para entrada/saída, alocação de memória, manipulação de strings e tempo.
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 // --- Constantes Globais ---
 // Definem valores fixos para o número de territórios, missões e tamanho máximo de strings, facilitando a manutenção.
 
+#define NUM_TERRITORIOS 5
+#define CONTADOR_TERRITORIOS 0
+#define MAX_STRING 100
+
 // --- Estrutura de Dados ---
 // Define a estrutura para um território, contendo seu nome, a cor do exército que o domina e o número de tropas.
+
+struct Territorio {
+    char nome[MAX_STRING];
+    char corExercito[MAX_STRING];
+    int numTropas;
+};
+
 
 // --- Protótipos das Funções ---
 // Declarações antecipadas de todas as funções que serão usadas no programa, organizadas por categoria.
@@ -29,9 +44,123 @@
 // Funções de lógica principal do jogo:
 // Função utilitária:
 
+void limparBufferEntrada() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
+
+void inicializarTerritorios(struct Territorio *lista, int *total) {
+
+    limparBufferEntrada();
+    
+
+    // Verificação de Limite
+    printf("Total atual de territorios: %d\n", *total);
+    if (*total >= NUM_TERRITORIOS) {
+        printf("ERRO: Limite maximo de territorios (%d) atingido.\n", NUM_TERRITORIOS);
+        return;
+    }
+
+    int novo_indice = *total;
+
+    printf("\n##### CADASTRO DE TERRITORIO %d #####\n", novo_indice + 1);
+
+    
+    printf("Informe o nome do territorio: ");
+    fgets(lista[novo_indice].nome, MAX_STRING, stdin);
+
+    printf("Informe o cor do exercito: ");
+    fgets(lista[novo_indice].corExercito, MAX_STRING, stdin);
+
+    printf("Informe a quantidade de tropas: ");
+    scanf("%d", &lista[novo_indice].numTropas);
+
+    lista[novo_indice].nome[strcspn(lista[novo_indice].nome, "\n")] = '\0';
+    lista[novo_indice].corExercito[strcspn(lista[novo_indice].corExercito, "\n")] = '\0';
+    
+    // 4. ATUALIZAÇÃO DO CONTADOR (CHAVE!)
+    (*total)++; // Incrementa o contador na função main (via ponteiro)
+
+}
+
+void exibirMenuPrincipal(int *itemMenu) {
+    int itemMenuSelected;
+    int totalItem = 2;
+
+    printf("\n############################## MENU PRINCIPAL ##############################");
+    printf("\n##### [1] CADASTRAR TERRITORIO         #####################################");
+    printf("\n##### [2] VER TERRITORIOS CADASTRADOS  #####################################");
+    printf("\n##### [0] SAIR                         #####################################");
+    printf("\n");
+
+    scanf("%d", &itemMenuSelected);
+
+    if (itemMenuSelected < 0 || itemMenuSelected > totalItem) {
+        printf("ERRO: Opcao invalida. Escolha entre 0 e %d.\n", totalItem);
+        *itemMenu = -1; // Indica escolha inválida
+        return;
+    }
+
+    *itemMenu = itemMenuSelected;
+
+}
+
+void imprimirTerritorios(struct Territorio *territorio) {
+    printf("\n##### Detalhes do Territorio #####\n");
+    printf("Nome: %s\n", territorio->nome);
+    printf("Cor do Exercito: %s\n", territorio->corExercito);
+    printf("Numero de Tropas: %d\n", territorio->numTropas);
+}
+
 // --- Função Principal (main) ---
 // Função principal que orquestra o fluxo do jogo, chamando as outras funções em ordem.
 int main() {
+    struct Territorio listaTerritorios[NUM_TERRITORIOS];
+    int itemMenu = -1;
+
+    do {
+        exibirMenuPrincipal(&itemMenu);
+        
+        // Verifica se a entrada foi válida antes do switch
+        if (itemMenu == -1) {
+            continue;
+        }
+
+        switch (itemMenu)
+        {
+            case 1:
+                // Tenta cadastrar um único território (uma inserção)
+                inicializarTerritorios(listaTerritorios, CONTADOR_TERRITORIOS);
+                break;
+            
+            case 2:
+                printf("\n\n##### LISTA DE TERRITORIOS CADASTRADOS (%d/%d) ##### \n", 
+                       CONTADOR_TERRITORIOS, NUM_TERRITORIOS);
+                
+                if (CONTADOR_TERRITORIOS == 0) {
+                    printf("Nenhum territorio cadastrado ainda.\n");
+                } else {
+                    // LOOP PARA IMPRIMIR TODOS OS TERRITÓRIOS
+                    for (int i = 0; i < CONTADOR_TERRITORIOS; i++) {
+                        imprimirTerritorios(&listaTerritorios[i]);
+                    }
+                }
+                break;
+            
+            case 0:
+                printf("\nEncerrando o jogo. Ate mais!\n");
+                break;
+
+            default:
+                // Este default não deve ser alcançado se a validação do menu for boa
+                printf("Opcao nao reconhecida. Tente novamente.\n");
+                break;
+        }
+
+    } while (itemMenu != 0); // Continua até o usuário escolher SAIR
+
+
     // teste
     // 1. Configuração Inicial (Setup):
     // - Define o locale para português.
